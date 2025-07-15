@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  server:
+    build: ./server
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/footfall
+    depends_on:
+      - mongo
+
+  client:
+    build: ./client
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+
+  sensor-simulator:
+    build: ./sensor-simulator
+    depends_on:
+      - server
+    environment:
+      - SERVER_URL=http://server:8000  
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
